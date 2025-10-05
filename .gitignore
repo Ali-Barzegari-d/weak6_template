@@ -1,0 +1,12 @@
+./build/debug/
+./build/release/    
+./build/Debug/
+./build/Release/
+.DS_Store
+*.log
+*.tmp   
+.vscode/
+.idea/ 
+*.exe
+*.dll  
+*.o
