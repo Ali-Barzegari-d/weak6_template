@@ -2,11 +2,17 @@
 #include <charconv>
 
 std::optional<int> to_int_status(const std::string& s) {
-    // TODO: implement parsing, return std::nullopt on failure
-    return std::nullopt; 
+    int value = 0;
+    auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
+    if (ec == std::errc() && ptr == s.data() + s.size()) {
+        return value;
+    }
+    return std::nullopt;
 }
 
 int to_int_exception(const std::string& s) {
-    // TODO: call to_int_status, throw std::invalid_argument on failure
-    return 0; 
+    if (auto v = to_int_status(s)) {
+        return *v;
+    }
+    throw std::invalid_argument("to_int_exception: invalid integer: " + s);
 }

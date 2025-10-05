@@ -2,33 +2,63 @@
 #include <algorithm>
 #include <stdexcept>
 
-// --- Person ---
+// --- Person implementation ---
 
 Person::Person(std::string n) : name(std::move(n)) {}
 
-void Person::rename_strong(const std::string& new_name) {
-    // TODO: implement strong guarantee using temporary + swap
-    // hint: construct temp string first, then commit
+// Example helper: simulate failure when resulting name equals "Fail!"
+// In real tasks this could be some validation or allocation that may throw.
+std::string Person::make_name_or_throw(const std::string& s) {
+    if (s == "Fail!") {
+        throw std::runtime_error("simulated name construction failure for: " + s);
+    }
+    return s;
 }
 
-// --- PersonDirectory ---
+void Person::rename_strong(const std::string& new_name) {
+    // Strong guarantee: build new value first, then commit via swap.
+    // make_name_or_throw may throw; if it does, 'name' remains unchanged.
+    std::string tmp = make_name_or_throw(new_name); // may throw
+    name.swap(tmp); // commit (noexcept)
+}
+
+// --- PersonDirectory implementation ---
 
 void PersonDirectory::add(Person p) {
-    // TODO: add person to people
+    people.push_back(std::move(p));
 }
 
 bool PersonDirectory::removeByName(const std::string& n) {
-    // TODO: erase-remove idiom, return true if someone removed
-    return false;
+    auto old_size = people.size();
+    people.erase(
+        std::remove_if(people.begin(), people.end(),
+                       [&n](const Person& p) { return p.name == n; }),
+        people.end()
+    );
+    return people.size() != old_size;
 }
 
 std::optional<std::string> PersonDirectory::findByName(const std::string& n) const {
-    // TODO: search in vector, return name if found, else nullopt
+    auto it = std::find_if(people.begin(), people.end(),
+                           [&n](const Person& p) { return p.name == n; });
+    if (it != people.end()) return it->name;
     return std::nullopt;
 }
 
 void PersonDirectory::bulkRename(const std::string& suffix) {
-    // TODO: strong guarantee: 
-    //   prepare temp copy of all renamed persons
-    //   if all succeed, commit by swapping with people
+    // Strong guarantee: construct a temporary vector of renamed Persons.
+    // If any construction fails (make_name_or_throw throws), original 'people'
+    // remains unchanged. On success, swap tmp into people (commit).
+    std::vector<Person> tmp;
+    tmp.reserve(people.size());
+
+    for (const auto& p : people) {
+        // build the candidate new name (may throw)
+        std::string newName = Person::make_name_or_throw(p.name + suffix);
+        // construct Person with the new name and append to tmp
+        tmp.emplace_back(std::move(newName));
+    }
+
+    // All renames succeeded — commit by swapping (noexcept)
+    people.swap(tmp);
 }
