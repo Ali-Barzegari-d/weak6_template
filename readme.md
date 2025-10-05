@@ -1,4 +1,4 @@
-# CSI2372 — Week 6 Lab Handout  
+# CSI2372 — Week 3 Lab Handout  
 **Topics:** Exception Safety • Ranges • Iterators • Borrowing vs Owning • Dependency Injection  
 **Course:** Advanced Programming Concepts with C++ (Fall 2025, uOttawa)  
 
@@ -23,7 +23,7 @@ By the end of this lab, you should be able to:
 
 - Implement exception-safe parsing routines using both `std::optional` and exceptions.  
 - Use C++20 ranges views (`filter`, `transform`, `take`) with standard algorithms like `sort` and `unique`.  
-- Apply **basic** and **strong exception guarantees** with the swap idiom.  
+- Apply **basic** and **strong exception guarantees** using build-and-swap.  
 - Design classes that support both **borrowing** (reference semantics) and **owning** (move semantics).  
 - Inject processing strategies using function pointers or `std::function`.  
 - Expose proper iterators so custom classes integrate with range-based `for`.  
@@ -67,13 +67,14 @@ You are given `person_directory.hpp` and `person_directory.cpp` containing two t
 
 - **Person**  
   - Moveable but not copyable.  
-  - `rename_strong(const std::string&)` must satisfy the **strong exception guarantee**: if name construction fails, the object remains unchanged.  
+  - `rename_strong(const std::string&)` must satisfy the **strong exception guarantee** by first constructing a new string and committing it via `swap`.  
+  - If construction fails (e.g., simulated `"Fail!"` case), the original name remains unchanged.  
 
 - **PersonDirectory**  
   - `add(Person)`, `removeByName(std::string)`, `findByName(std::string)`.  
-  - `bulkRename(std::string suffix)` must satisfy the **strong exception guarantee**: if renaming any person fails, no person is changed.  
+  - `bulkRename(std::string suffix)` must satisfy the **strong exception guarantee** by building a new vector of renamed persons. If renaming any person fails, the directory remains unchanged.  
 
-Tests simulate failures (`"Fail!"`) and check rollback safety.  
+Tests simulate failures and check that rollback behavior is correct.  
 
 ---
 
@@ -86,7 +87,8 @@ You are given `iterable_processor.hpp` and `iterable_processor.cpp`.
   - `setOwned(std::vector<int>)` → moves the vector (owning).  
 
 - **Iteration**  
-  - Implement `begin()`/`end()` (const and non-const) so the class works in range-based `for`.  
+  - Implement `begin()`/`end()` so the class can be used in range-based `for`.  
+  - Iteration is **read-only** (`const_iterator`), ensuring that both borrowed and owned vectors are safe to traverse.  
 
 - **Processing**  
   - `process(std::function<int(int)>)` → apply the function to every element and return a new vector.  
@@ -99,7 +101,6 @@ Tests cover both borrowed and owned modes, as well as custom lambdas and functio
 Recommended portable workflow:  
 
 ```bash
-
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 ctest --test-dir build --output-on-failure
