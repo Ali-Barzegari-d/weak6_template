@@ -6,9 +6,16 @@
 
 Person::Person(std::string n) : name(std::move(n)) {}
 
+std::string Person::make_name_or_throw(const std::string& s) {
+    if (s == "Fail!") {
+        throw std::runtime_error("simulated name construction failure for: " + s);
+    }
+    return s;
+}
+
 void Person::rename_strong(const std::string& new_name) {
     // TODO: implement strong guarantee using temporary + swap
-    // hint: construct temp string first, then commit
+    
 }
 
 // --- PersonDirectory ---

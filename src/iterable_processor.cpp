@@ -1,6 +1,12 @@
 #include "iterable_processor.hpp"
 #include <stdexcept>
 
+const std::vector<int>& IterableProcessor::current() const {
+    if (owned) return *owned;
+    if (borrowed) return *borrowed;
+    throw std::runtime_error("IterableProcessor: no data set");
+}
+
 void IterableProcessor::setBorrowed(const std::vector<int>& ref) {
     // TODO: assign borrowed pointer, reset owned
 }
