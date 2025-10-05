@@ -1,4 +1,4 @@
-# CSI2372 — Week 3 Lab Handout  
+# CSI2372 — Week 6 Lab Handout  
 **Topics:** Exception Safety • Ranges • Iterators • Borrowing vs Owning • Dependency Injection  
 **Course:** Advanced Programming Concepts with C++ (Fall 2025, uOttawa)  
 
@@ -111,4 +111,5 @@ CI runs on GitHub automatically when you push.
 ## 8. Grading
 
 100% autograded: your score = proportion of passing tests.
+
 No manual grading.
