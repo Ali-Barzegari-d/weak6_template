@@ -1,16 +1,9 @@
 #include "iterable_processor.hpp"
-#include <stdexcept>
 
 // helper: get current active vector (owned or borrowed)
 const std::vector<int>& IterableProcessor::current() const {
     if (owned) return *owned;
     if (borrowed) return *borrowed;
-    throw std::runtime_error("IterableProcessor: no data set");
-}
-
-std::vector<int>& IterableProcessor::current() {
-    if (owned) return *owned;
-    if (borrowed) throw std::runtime_error("Cannot modify borrowed data");
     throw std::runtime_error("IterableProcessor: no data set");
 }
 
@@ -24,27 +17,27 @@ void IterableProcessor::setOwned(std::vector<int> data) {
     borrowed = nullptr;
 }
 
-auto IterableProcessor::begin() {
-    return current().begin();
+// Return const_iterators in all cases (safe for both owned & borrowed)
+IterableProcessor::const_iterator IterableProcessor::begin() const {
+    return current().cbegin();
 }
 
-auto IterableProcessor::end() {
-    return current().end();
+IterableProcessor::const_iterator IterableProcessor::end() const {
+    return current().cend();
 }
 
-auto IterableProcessor::begin() const {
-    return current().begin();
+IterableProcessor::const_iterator IterableProcessor::begin() {
+    return current().cbegin();
 }
 
-auto IterableProcessor::end() const {
-    return current().end();
+IterableProcessor::const_iterator IterableProcessor::end() {
+    return current().cend();
 }
 
 std::vector<int> IterableProcessor::process(std::function<int(int)> func) const {
+    const auto& src = current();
     std::vector<int> result;
-    result.reserve(current().size());
-    for (int v : current()) {
-        result.push_back(func(v));
-    }
+    result.reserve(src.size());
+    for (int v : src) result.push_back(func(v));
     return result;
 }
