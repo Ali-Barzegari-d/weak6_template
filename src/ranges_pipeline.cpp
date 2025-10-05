@@ -4,18 +4,29 @@
 #include <algorithm>
 
 std::vector<int> top_unique_sorted_square_odds(const std::vector<int>& src, std::size_t n) {
-    // TODO: build a ranges pipeline:
-    //   1. filter odd numbers
-    //   2. transform -> square
-    // collect into a temporary vector
+    // Step 1 + 2: filter odds and square them
+    auto pipeline = src
+        | std::views::filter([](int x){ return x % 2 != 0; })
+        | std::views::transform([](int x){ return x * x; });
 
+    // Step 3: collect into temporary vector
     std::vector<int> tmp;
-    // TODO: copy elements from pipeline into tmp
+    for (int x : pipeline) {
+        tmp.push_back(x);
+    }
 
-    // TODO: sort tmp
-    // TODO: remove duplicates (unique/erase idiom)
+    // Step 4: sort
+    std::ranges::sort(tmp);
 
-    // TODO: take first n elements from tmp and put into result
+    // Step 5: remove duplicates
+    auto it = std::ranges::unique(tmp);
+    tmp.erase(it.begin(), it.end());
+
+    // Step 6: take first n
     std::vector<int> result;
+    for (std::size_t i = 0; i < n && i < tmp.size(); ++i) {
+        result.push_back(tmp[i]);
+    }
+
     return result;
 }

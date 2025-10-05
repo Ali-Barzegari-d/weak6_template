@@ -1,6 +1,6 @@
 #include "iterable_processor.hpp"
-#include <stdexcept>
 
+// helper: get current active vector (owned or borrowed)
 const std::vector<int>& IterableProcessor::current() const {
     if (owned) return *owned;
     if (borrowed) return *borrowed;
@@ -8,34 +8,36 @@ const std::vector<int>& IterableProcessor::current() const {
 }
 
 void IterableProcessor::setBorrowed(const std::vector<int>& ref) {
-    // TODO: assign borrowed pointer, reset owned
+    borrowed = &ref;
+    owned.reset();
 }
 
 void IterableProcessor::setOwned(std::vector<int> data) {
-    // TODO: move data into owned, reset borrowed
+    owned = std::move(data);
+    borrowed = nullptr;
 }
 
-auto IterableProcessor::begin() {
-    // TODO: return iterator depending on whether owned or borrowed is active
-    return owned ? owned->begin() : borrowed->begin();
+// Return const_iterators in all cases (safe for both owned & borrowed)
+IterableProcessor::const_iterator IterableProcessor::begin() const {
+    return current().cbegin();
 }
 
-auto IterableProcessor::end() {
-    // TODO: return iterator depending on state
-    return owned ? owned->end() : borrowed->end();
+IterableProcessor::const_iterator IterableProcessor::end() const {
+    return current().cend();
 }
 
-auto IterableProcessor::begin() const {
-    // TODO
-    return owned ? owned->begin() : borrowed->begin();
+IterableProcessor::const_iterator IterableProcessor::begin() {
+    return current().cbegin();
 }
 
-auto IterableProcessor::end() const {
-    // TODO
-    return owned ? owned->end() : borrowed->end();
+IterableProcessor::const_iterator IterableProcessor::end() {
+    return current().cend();
 }
 
 std::vector<int> IterableProcessor::process(std::function<int(int)> func) const {
-    // TODO: iterate through elements, apply func, collect into result
-    return {};
+    const auto& src = current();
+    std::vector<int> result;
+    result.reserve(src.size());
+    for (int v : src) result.push_back(func(v));
+    return result;
 }
